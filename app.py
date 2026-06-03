@@ -8,6 +8,7 @@ st.set_page_config(
 )
 
 st.title("USA Market Intelligence")
+st.markdown("---")
 st.write("Dashboard for product price analysis in the USA market.")
 
 df = pd.read_csv("data/products.csv")
@@ -21,6 +22,7 @@ selected_range = st.slider(
     max_value=max_price,
     value=(min_price, max_price)
 )
+
 
 filtered_df = df[
     (df["Price_USD"] >= selected_range[0]) &
@@ -40,6 +42,36 @@ st.subheader("Price Chart")
 st.bar_chart(filtered_df.set_index("Product")["Price_USD"])
 
 csv = filtered_df.to_csv(index=False).encode("utf-8")
+
+st.subheader("Market Insights")
+
+
+
+if not filtered_df.empty:
+    most_expensive = filtered_df.loc[filtered_df["Price_USD"].idxmax()]
+    cheapest = filtered_df.loc[filtered_df["Price_USD"].idxmin()]
+
+    st.write(
+        f"Most expensive product: **{most_expensive['Product']}** "
+        f"(${most_expensive['Price_USD']})"
+    )
+
+    st.write(
+        f"Cheapest product: **{cheapest['Product']}** "
+        f"(${cheapest['Price_USD']})"
+    )
+else:
+    st.warning("No products found in this price range.")
+
+st.write(
+    f"Most expensive product: **{most_expensive['Product']}** "
+    f"(${most_expensive['Price_USD']})"
+)
+
+st.write(
+    f"Cheapest product: **{cheapest['Product']}** "
+    f"(${cheapest['Price_USD']})"
+)
 
 st.download_button(
     label="Download filtered CSV",
