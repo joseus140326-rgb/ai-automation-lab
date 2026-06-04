@@ -18,7 +18,6 @@ df["Opportunity_Score"] = (
 ) / df["Price_USD"]
 
 
-
 min_price = float(df["Price_USD"].min())
 max_price = float(df["Price_USD"].max())
 
@@ -56,7 +55,34 @@ col3.metric("Max Price", f"${filtered_df['Price_USD'].max():.2f}")
 st.subheader("Filtered Products")
 st.dataframe(filtered_df, use_container_width=True)
 
+st.subheader("Opportunity Ranking")
+
+ranking = filtered_df.sort_values(
+    by="Opportunity_Score",
+    ascending=False
+)
+
+st.dataframe(
+    ranking[
+        [
+            "Product",
+            "Price_USD",
+            "Demand",
+            "Trend",
+            "Opportunity_Score"
+        ]
+    ],
+    use_container_width=True
+)
+
 st.subheader("Price Chart")
+
+st.subheader("Opportunity Score Chart")
+
+st.bar_chart(
+    ranking.set_index("Product")["Opportunity_Score"]
+)
+
 st.bar_chart(filtered_df.set_index("Product")["Price_USD"])
 
 csv = filtered_df.to_csv(index=False).encode("utf-8")
