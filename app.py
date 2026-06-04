@@ -15,8 +15,9 @@ df = pd.read_csv("data/products.csv")
 
 df["Opportunity_Score"] = (
     df["Demand"] * df["Trend"]
-) / df["Price_USD"]
+) / (df["Price_USD"] * df["Competition"])
 
+df["Opportunity_Score"] = df["Opportunity_Score"].round(2)
 
 min_price = float(df["Price_USD"].min())
 max_price = float(df["Price_USD"].max())
@@ -53,7 +54,7 @@ col2.metric("Average Price", f"${filtered_df['Price_USD'].mean():.2f}")
 col3.metric("Max Price", f"${filtered_df['Price_USD'].max():.2f}")
 
 st.subheader("Filtered Products")
-st.dataframe(filtered_df, use_container_width=True)
+st.dataframe(filtered_df, width="stretch")
 
 st.subheader("Opportunity Ranking")
 
@@ -62,28 +63,31 @@ ranking = filtered_df.sort_values(
     ascending=False
 )
 
+
 st.dataframe(
     ranking[
-        [
+        [        
             "Product",
             "Price_USD",
             "Demand",
             "Trend",
+            "Competition",
             "Opportunity_Score"
-        ]
+        ]              
+
     ],
-    use_container_width=True
+    width="stretch"
 )
 
-st.subheader("Price Chart")
-
 st.subheader("Opportunity Score Chart")
-
 st.bar_chart(
     ranking.set_index("Product")["Opportunity_Score"]
 )
 
-st.bar_chart(filtered_df.set_index("Product")["Price_USD"])
+st.subheader("Price Chart")
+st.bar_chart(
+    filtered_df.set_index("Product")["Price_USD"]
+)
 
 csv = filtered_df.to_csv(index=False).encode("utf-8")
 

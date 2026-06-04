@@ -1,6 +1,6 @@
-Product,Price_USD,Demand,Trend
-Avocado,1.49,90,85
-Banana,0.59,70,60
-Milk,4.99,80,75
-Eggs,6.49,95,90
-Chicken Breast,12.99,85,95
+Product,Price_USD,Demand,Trend,Competition
+Avocado,1.49,90,85,65
+Banana,0.59,70,60,80
+Milk,4.99,80,75,70
+Eggs,6.49,95,90,75
+Chicken Breast,12.99,85,95,60
