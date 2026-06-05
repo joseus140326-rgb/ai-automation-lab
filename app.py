@@ -29,11 +29,23 @@ selected_range = st.slider(
     value=(min_price, max_price)
 )
 
+sort_option = st.selectbox(
+    "Sort ranking by",
+    [
+        "Opportunity_Score",
+        "Demand",
+        "Trend",
+        "Price_USD"
+    ]
+)
 
 filtered_df = df[
     (df["Price_USD"] >= selected_range[0]) &
     (df["Price_USD"] <= selected_range[1])
 ]
+
+display_df = filtered_df.copy()
+display_df["Opportunity_Score"] = display_df["Opportunity_Score"].round(2)
 
 st.subheader("Top Opportunity")
 
@@ -47,53 +59,72 @@ if not filtered_df.empty:
 else:
     st.warning("No opportunity found in this price range.")
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 col1.metric("Total Products", len(filtered_df))
-col2.metric("Average Price", f"${filtered_df['Price_USD'].mean():.2f}")
-col3.metric("Max Price", f"${filtered_df['Price_USD'].max():.2f}")
+
+if not filtered_df.empty:
+    col2.metric("Average Price", f"${filtered_df['Price_USD'].mean():.2f}")
+    col3.metric("Max Price", f"${filtered_df['Price_USD'].max():.2f}")
+    col4.metric("Best Score", f"{filtered_df['Opportunity_Score'].max():.2f}")
+else:
+    col2.metric("Average Price", "$0.00")
+    col3.metric("Max Price", "$0.00")
+    col4.metric("Best Score", "0.00")
 
 st.subheader("Filtered Products")
-st.dataframe(filtered_df, width="stretch")
+st.dataframe(display_df, width="stretch")
 
 st.subheader("Opportunity Ranking")
 
-ranking = filtered_df.sort_values(
-    by="Opportunity_Score",
-    ascending=False
-)
+if not filtered_df.empty:
+    ranking = filtered_df.sort_values(
+        by=sort_option,
+        ascending=False
+    )
 
+    top3 = ranking.head(3)
 
-st.dataframe(
-    ranking[
-        [        
-            "Product",
-            "Price_USD",
-            "Demand",
-            "Trend",
-            "Competition",
-            "Opportunity_Score"
-        ]              
+    st.write("🥇 #1:", top3.iloc[0]["Product"])
 
-    ],
-    width="stretch"
-)
+    if len(top3) > 1:
+        st.write("🥈 #2:", top3.iloc[1]["Product"])
 
-st.subheader("Opportunity Score Chart")
-st.bar_chart(
-    ranking.set_index("Product")["Opportunity_Score"]
-)
+    if len(top3) > 2:
+        st.write("🥉 #3:", top3.iloc[2]["Product"])
 
-st.subheader("Price Chart")
-st.bar_chart(
-    filtered_df.set_index("Product")["Price_USD"]
-)
+    ranking_display = ranking.copy()
+    ranking_display["Opportunity_Score"] = ranking_display["Opportunity_Score"].round(2)
+
+    st.dataframe(
+        ranking_display[
+            [
+                "Product",
+                "Price_USD",
+                "Demand",
+                "Trend",
+                "Competition",
+                "Opportunity_Score"
+            ]
+        ],
+        width="stretch"
+    )
+
+    st.subheader("Opportunity Score Chart")
+    st.bar_chart(
+        ranking.set_index("Product")["Opportunity_Score"]
+    )
+
+    st.subheader("Price Chart")
+    st.bar_chart(
+        filtered_df.set_index("Product")["Price_USD"]
+    )
+else:
+    st.warning("No products available for ranking or charts.")
 
 csv = filtered_df.to_csv(index=False).encode("utf-8")
 
 st.subheader("Market Insights")
-
-
 
 if not filtered_df.empty:
     most_expensive = filtered_df.loc[filtered_df["Price_USD"].idxmax()]
@@ -101,17 +132,15 @@ if not filtered_df.empty:
 
     st.write(
         f"Most expensive product: **{most_expensive['Product']}** "
-        f"(${most_expensive['Price_USD']})"
+        f"(${most_expensive['Price_USD']:.2f})"
     )
 
     st.write(
         f"Cheapest product: **{cheapest['Product']}** "
-        f"(${cheapest['Price_USD']})"
+        f"(${cheapest['Price_USD']:.2f})"
     )
 else:
     st.warning("No products found in this price range.")
-
-
 
 st.download_button(
     label="Download filtered CSV",
